@@ -203,6 +203,10 @@ VisDrone2019-DET-train/
 python visdrone2yolo.py --data data/VisDrone.yaml
 ```
 
+> **Note:** The conversion output is **resolution-independent**.
+> Labels are normalized to `[0, 1]` relative to the original image dimensions,
+> so you do **not** need to re-run this step when switching between 640 and 1280.
+
 ---
 
 ## 4. Why Regenerate Anchors?
@@ -269,6 +273,36 @@ are tiny compared to COCO.
 
 Training with mismatched anchors forces the network to learn
 large corrections, which slows convergence and hurts recall on small objects.
+
+### Run Anchor Generation
+
+> **Important:** `--img` must match the image size you will use for training.
+> Anchors are expressed in pixels at the training resolution — anchors generated
+> at 1280px are ~2× too large for a 640px training run and will hurt recall on small objects.
+
+**For 1280px training:**
+
+```bash
+python regenerate_anchors.py \
+  --data data/VisDrone.yaml \
+  --img 1280 \
+  --n 9 \
+  --thr 4.0 \
+  --gen 1000
+```
+
+**For 640px training (hardware-constrained):**
+
+```bash
+python regenerate_anchors.py \
+  --data data/VisDrone.yaml \
+  --img 640 \
+  --n 9 \
+  --thr 4.0 \
+  --gen 1000
+```
+
+The script writes the 9 optimized anchors directly back into `data/VisDrone.yaml`.
 
 ### How Anchor Generation Works
 
@@ -355,7 +389,9 @@ anchor — near-perfect recall ceiling before training even begins.
 
 ## 6. Training
 
-With labels converted and anchors saved to `data/VisDrone.yaml`, start training:
+With labels converted and anchors saved to `data/VisDrone.yaml`, start training.
+
+**For 1280px (recommended, higher accuracy on small objects):**
 
 ```bash
 python train.py \
@@ -365,8 +401,35 @@ python train.py \
   --batch 8 \
   --epochs 100 \
   --hyp data/hyps/hyp.scratch-low.yaml \
-  --name visdrone_s
+  --name visdrone_s_1280
 ```
+
+**For 640px (hardware-constrained):**
+
+```bash
+python train.py \
+  --data data/VisDrone.yaml \
+  --weights yolov5s.pt \
+  --img 640 \
+  --batch 16 \
+  --epochs 100 \
+  --hyp data/hyps/hyp.scratch-low.yaml \
+  --name visdrone_s_640
+```
+
+> **Remember:** regenerate anchors with `--img 640` before running this.
+> You can increase `--batch` at 640px because each image uses ~4× less GPU memory than at 1280px.
+
+### Monitor Training with TensorBoard
+
+Open a **second terminal** in the same directory and run:
+
+```bash
+tensorboard --logdir runs/train
+```
+
+Then open [http://localhost:6006](http://localhost:6006) in your browser.
+TensorBoard updates in real-time as training progresses — no restart needed.
 
 ### Recommended Hyperparameter Adjustments
 
@@ -390,11 +453,11 @@ flowchart TD
     B --> B3["Convert box format\nabs top-left to norm center"]
     B1 & B2 & B3 --> B4[("labels/ directories\ncreated for all 3 splits")]
 
-    B4 --> C["python regenerate_anchors.py\n--data data/VisDrone.yaml --img 1280"]
+    B4 --> C["python regenerate_anchors.py\n--data data/VisDrone.yaml\n--img 640 or 1280"]
     C --> C1["K-Means on 343,193 boxes"]
     C1 --> C2["Genetic Algorithm\n1000 generations"]
     C2 --> C3[("9 custom anchors\nsaved to VisDrone.yaml")]
 
-    C3 --> D["python train.py\n--data VisDrone.yaml --img 1280"]
-    D --> E[("runs/train/visdrone_s/weights/\nbest.pt  /  last.pt")]
+    C3 --> D["python train.py\n--data VisDrone.yaml\n--img 640 or 1280"]
+    D --> E[("runs/train/visdrone_s_640 or _1280/\nweights/best.pt  /  last.pt")]
 ```
