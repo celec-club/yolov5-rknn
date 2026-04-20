@@ -396,12 +396,13 @@ With labels converted and anchors saved to `data/VisDrone.yaml`, start training.
 ```bash
 python train.py \
   --data data/VisDrone.yaml \
-  --weights yolov5s.pt \
-  --img 1280 \
+  --weights yolov5n.pt \
+  --img 640 \
   --batch 8 \
-  --epochs 100 \
+  --epochs 300 \
+  --image-weights \
   --hyp data/hyps/hyp.scratch-low.yaml \
-  --name visdrone_s_1280
+  --name yolov5n_visdrone_640_imgweights_b8_300ep
 ```
 
 **For 640px (hardware-constrained):**
