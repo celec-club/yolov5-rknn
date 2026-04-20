@@ -600,7 +600,9 @@ def run(
         if isinstance(model.model[-1], Detect):
             # save anchors
             print('---> save anchors for RKNN')
-            RK_anchors = model.model[-1].stride.reshape(3,1).repeat(1,3).reshape(-1,1)* model.model[-1].anchors.reshape(9,2)
+            nl = len(model.model[-1].stride)  # number of detection layers
+            na = model.model[-1].na           # number of anchors per layer
+            RK_anchors = model.model[-1].stride.reshape(nl,1).repeat(1,na).reshape(-1,1)* model.model[-1].anchors.reshape(nl*na,2)
             with open('RK_anchors.txt', 'w') as anf:
                 # anf.write(str(model.model[-1].na)+'\n')
                 for _v in RK_anchors.numpy().flatten():
