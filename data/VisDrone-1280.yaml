@@ -1,0 +1,34 @@
+path: /home/ibrahim/atc/detection-and-tracking/yolov5/datasets/VisDrone-1280
+train: VisDrone2019-DET-train/images
+val: VisDrone2019-DET-val/images
+test: VisDrone2019-DET-test-dev/images
+names:
+  0: pedestrian
+  1: people
+  2: bicycle
+  3: car
+  4: van
+  5: truck
+  6: tricycle
+  7: awning-tricycle
+  8: bus
+  9: motor
+anchors:
+- - 6.118380069732666
+  - 9.761902809143066
+- - 14.55997085571289
+  - 12.951892852783203
+- - 10.389630317687988
+  - 22.172494888305664
+- - 29.188756942749023
+  - 16.010725021362305
+- - 19.554683685302734
+  - 32.49006652832031
+- - 42.63898849487305
+  - 27.137310028076172
+- - 36.462379455566406
+  - 53.750953674316406
+- - 71.23013305664062
+  - 42.875728607177734
+- - 100.6228256225586
+  - 98.72142791748047
