@@ -42,5 +42,7 @@ if __name__ == '__main__':
     yaml_dir = Path(opt.data).parent
     root = (yaml_dir / data_dict['path']).resolve()
 
-    for d in 'VisDrone2019-DET-train', 'VisDrone2019-DET-val', 'VisDrone2019-DET-test-dev':
-        visdrone2yolo(root / d)
+    for key in ('train', 'val', 'test'):
+        if key in data_dict:
+            split_dir = Path(data_dict[key]).parent  # e.g. 'VisDrone2019-DET-train/images' -> 'VisDrone2019-DET-train'
+            visdrone2yolo(root / split_dir)
